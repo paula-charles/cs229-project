@@ -5,6 +5,7 @@ import csv
 import util
 import pandas as pd
 import matplotlib.pyplot as plt
+import re
 
 
 class LinearModel(object):
@@ -105,17 +106,15 @@ def fit_naive_bayes_model(matrix, labels):
     
     n_examples,n_words= np.shape(matrix)
     
-    avg_perf_word = np.zeros(n_words)
-    
     sum_words=np.zeros(n_words)
     word_appearance = np.zeros(n_words)
     for k in range(n_examples):
         for i in range(n_words):
-            sum_words[i]+=matrix[k,i]*labels[k]
-            word_appearance[i]+=matrix[k,i]
+            sum_words[i] += matrix[k, i]*labels[k]
+            word_appearance[i] += matrix[k, i]
     
     avg_perf_word = sum_words/word_appearance #I may need to do some laplace smoothing
-    return avg_perf, avg_perf_word
+    return (avg_perf, avg_perf_word)
     # *** END CODE HERE ***
 
 
@@ -141,13 +140,13 @@ def predict_from_naive_bayes_model(model, matrix):
         sum0 = 0
         sum1 = 0
         for wordIndex in range(len(matrix[0])):
-            if matrix[exampleIndex,wordIndex]==0:
-                sum0+=np.log(1-phiX_knowingY[0][wordIndex])
-                sum1+= np.log(1-phiX_knowingY[1][wordIndex])
+            if matrix[exampleIndex,wordIndex] == 0:
+                sum0 += np.log(1-phiX_knowingY[0][wordIndex])
+                sum1 += np.log(1-phiX_knowingY[1][wordIndex])
             else:
-                sum0+=matrix[exampleIndex,wordIndex]*np.log(phiX_knowingY[0][wordIndex])
-                sum1+=matrix[exampleIndex,wordIndex]*np.log(phiX_knowingY[1][wordIndex])
-        prob_of_1 = np.log(phi) +sum1
+                sum0 += matrix[exampleIndex,wordIndex]*np.log(phiX_knowingY[0][wordIndex])
+                sum1 += matrix[exampleIndex,wordIndex]*np.log(phiX_knowingY[1][wordIndex])
+        prob_of_1 = np.log(phi) + sum1
         prob_of_0 = np.log(1-phi) + sum0
         if prob_of_1 >= prob_of_0:
             prediction[exampleIndex] = 1
@@ -157,7 +156,7 @@ def predict_from_naive_bayes_model(model, matrix):
     
 
 
-def get_words(message):
+def get_words(message,type_data):
     """Get the normalized list of words from a message string.
 
     This function should split a message into words, normalize them, and return
@@ -172,14 +171,23 @@ def get_words(message):
     """
 
     # *** START CODE HERE ***
-    #words = message.split(" ")
-    #words = [word.lower() for word in words]
-    message = message[2:-2]
-    return [word.lower() for word in message.split("', '")]
+    if type_data in ['title', 'description']:
+        new_message = []
+        if "?" in message:
+            new_message.append("?")
+        if "!" in message:
+            new_message.append("!")
+        message = re.sub("[^\w\s]", "", message)
+        new_message += [word.lower() for word in message.split(' ')]
+        return new_message
+
+    if type_data == 'tags':
+        message = message[2:-2]
+        return [word.lower() for word in message.split("', '")]
     # *** END CODE HERE ***
 
 
-def create_dictionary(messages):
+def create_dictionary(messages,type_data):
     """Create a dictionary mapping words to integer indices.
 
     This function should create a dictionary of word to indices using the provided
@@ -198,9 +206,9 @@ def create_dictionary(messages):
     # *** START CODE HERE ***
     CompleteWordList = []
     WordCounter = []
-    NumberOfMessages = len(messages)
+
     for message in messages:
-        word_list= set(get_words(message)) #get rid of duplicates
+        word_list= set(get_words(message,type_data)) #get rid of duplicates
         for word in word_list:
             if word in CompleteWordList:
                 incrementationIndex = CompleteWordList.index(word)
@@ -210,8 +218,8 @@ def create_dictionary(messages):
                 WordCounter.append(1)
                 
     dictionary = dict()
-    #print(CompleteWordList,WordCounter)
-    counter=0
+
+    counter = 0
     for wordnumber in range(len(CompleteWordList)):
         if WordCounter[wordnumber] >= 3:
             dictionary[CompleteWordList[wordnumber]]=counter
@@ -221,7 +229,7 @@ def create_dictionary(messages):
     # *** END CODE HERE ***
 
 
-def transform_text(messages, word_dictionary):
+def transform_text(messages, word_dictionary,type_data):
     """Transform a list of text messages into a numpy array for further processing.
 
     This function should create a numpy array that contains the number of times each word
@@ -247,7 +255,7 @@ def transform_text(messages, word_dictionary):
     result = np.zeros((numberMessages,numberWords))
     for i in range(numberMessages):
         message = messages[i]
-        wordList = get_words(message)
+        wordList = get_words(message,type_data)
         for word in wordList:
             if word in word_dictionary:
                 word_index = word_dictionary[word]
@@ -270,12 +278,12 @@ def get_top_five_naive_bayes_words(model, dictionary):
     Returns: A list of the top five most indicative words in sorted order with the most indicative first
     """
     # *** START CODE HERE ***
-    avg_perf_word=model[1]
+    avg_perf_word = model[1]
     indices = []
     for k in range(5):
-        ind=np.argmax(avg_perf_word)
+        ind = np.argmax(avg_perf_word)
         indices.append(ind)
-        avg_perf_word[ind]=0
+        avg_perf_word[ind] = 0
     
     return [list(dictionary.keys())[indices[k]] for k in range(5)]
     
@@ -299,20 +307,21 @@ def main():
     number_comments = [datapoint[0] for datapoint in training_data]
     number_views = [datapoint[-1] for datapoint in training_data]
     
-    dictionary = create_dictionary(names)
+    dictionary = create_dictionary(names, 'title')
     #print(dictionary)
     print('Size of dictionary: ', len(dictionary))
     
-    train_matrix = transform_text(names, dictionary)
+    train_matrix = transform_text(names, dictionary,'title')
     
     linear = LinearModel()
     linear.fit(train_matrix,np.array(number_views))
     
     val_names = [list(datapoint[7].rpartition(": "))[-1] for datapoint in validation_data]
     val_number_comments = [datapoint[0] for datapoint in validation_data]
-    val_number_views = [datapoint[-1] for datapoint in validation_data]
-    
-    val_matrix = transform_text(val_names, dictionary)
+    #val_number_views = [datapoint[-1] for datapoint in validation_data]
+    val_number_views = [datapoint[-1] for datapoint in training_data]
+
+    val_matrix = transform_text(val_names, dictionary,'title')
     
     prediction = linear.predict(val_matrix)
     
@@ -325,6 +334,9 @@ def main():
         plt.xscale('log')
 
     plot_loghist(val_number_views, 20)
+    plt.title('Number of views of the titles in the training data set\n'
+              '(log-scale)')
+    plt.show()
     
     
     naive_bayes_model_views = fit_naive_bayes_model(train_matrix,number_views)
