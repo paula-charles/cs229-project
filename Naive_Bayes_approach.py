@@ -7,6 +7,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import re
 
+from transformers import BertTokenizers
+## Load pretrained model/tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+
 
 class LinearModel(object):
     """Base class for linear models."""
@@ -145,7 +150,7 @@ def predict_from_naive_bayes_model(model, matrix):
             prediction[exampleIndex] = 1
     return prediction
 
-def get_words(message,type_data):
+def get_words(message,type_data, tokenizing = False):
     """
     This function splits a title into words, normalize them, and return
     the resulting list. We are splitting on spaces. And we are keeping
@@ -153,18 +158,24 @@ def get_words(message,type_data):
     """
 
     if type_data in ['title', 'description']:
-        new_message = []
-        if "?" in message:
-            new_message.append("?")
-        if "!" in message:
-            new_message.append("!")
-        message = re.sub("[^\w\s]", "", message)
-        new_message += [word.lower() for word in message.split(' ')]
-        return new_message
+        if tokenizing == False:
+            new_message = []
+            if "?" in message:
+                new_message.append("?")
+            if "!" in message:
+                new_message.append("!")
+            message = re.sub("[^\w\s]", "", message)
+            new_message += [word.lower() for word in message.split(' ')]
+            return new_message
+
+        else:
+            new_message = tokenizer.tokenize(message)
+            return new_message
 
     if type_data == 'tags':
         message = message[2:-2]
         return [word.lower() for word in message.split("', '")]
+
 
 
 def create_dictionary(messages,type_data):
