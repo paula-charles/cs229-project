@@ -18,7 +18,7 @@ class LinearModel(object):
             step_size: Step size for iterative solvers only.
             max_iter: Maximum number of iterations for the solver.
             eps: Threshold for determining convergence.
-            theta_0: Initial guess for theta. If None, use the zero vector.
+            theta_0: Initial guess for theta. If None, uses the zero vector.
             verbose: Print loss values during training.
         """
         self.theta = theta_0
@@ -34,7 +34,7 @@ class LinearModel(object):
             x: Training example inputs. Shape (n_examples, dim).
             y: Training example labels. Shape (n_examples,).
         """
-        # *** START CODE HERE ***
+
         n_examples,dim = np.shape(x)
         reg=1
         self.theta = np.zeros(dim)
@@ -54,24 +54,24 @@ class LinearModel(object):
     def create_poly(self, k, X):
         """
         Generates a polynomial feature map using the data x.
-        The polynomial map should have powers from 0 to k
-        Output should be a numpy array whose shape is (n_examples, k+1)
+        The polynomial map has powers from 0 to k
+        Output is a numpy array whose shape is (n_examples, k+1)
 
         Args:
             X: Training example inputs. Shape (n_examples, 2).
         """
-        # *** START CODE HERE ***
+
         n_examples = len(X)
         augmented_X = np.zeros(shape=(n_examples,k+1))
         for i in range(len(X)):
             for j in range(k+1):
                 augmented_X[i,j] = X[i,1]**j
         return augmented_X    
-        # *** END CODE HERE ***
+
     
     def predict(self, X):
         """
-        Make a prediction given new inputs x.
+        Makes a prediction given new inputs x.
         Returns the numpy array of the predictions.
 
         Args:
@@ -80,27 +80,22 @@ class LinearModel(object):
         Returns:
             Outputs of shape (n_examples,).
         """
-        # *** START CODE HERE ***
+
         return np.dot(self.theta,X.T)
-        # *** END CODE HERE ***
+
 
 def fit_naive_bayes_model(matrix, labels):
-    """Fit a naive bayes model.
+    """
+    This function fits a Naive Bayes model given a training matrix and labels.
+     It returns the state of that model.
 
-    This function should fit a Naive Bayes model given a training matrix and labels.
-
-    The function should return the state of that model.
-
-    Feel free to use whatever datatype you wish for the state of the model.
-
-    Args:
+   Args:
         matrix: A numpy array containing word counts for the training data
         labels: The binary (0 or 1) labels for that training data
 
     Returns: The trained model
     """
 
-    # *** START CODE HERE ***
     #matrix[0] is the word counts for the first sentence
     avg_perf = np.average(labels)
     
@@ -115,13 +110,11 @@ def fit_naive_bayes_model(matrix, labels):
     
     avg_perf_word = sum_words/word_appearance #I may need to do some laplace smoothing
     return (avg_perf, avg_perf_word)
-    # *** END CODE HERE ***
 
 
 def predict_from_naive_bayes_model(model, matrix):
-    """Use a Naive Bayes model to compute predictions for a target matrix.
-
-    This function should be able to predict on the models that fit_naive_bayes_model
+    """
+    This function predicts on the models that fit_naive_bayes_model
     outputs.
 
     Args:
@@ -130,7 +123,7 @@ def predict_from_naive_bayes_model(model, matrix):
 
     Returns: A numpy array containg the predictions from the model
     """
-    # *** START CODE HERE ***
+
     phi=model[0]
     phiX_knowingY = model[1]
     
@@ -151,26 +144,14 @@ def predict_from_naive_bayes_model(model, matrix):
         if prob_of_1 >= prob_of_0:
             prediction[exampleIndex] = 1
     return prediction
-    
-    # *** END CODE HERE ***
-    
-
 
 def get_words(message,type_data):
-    """Get the normalized list of words from a message string.
-
-    This function should split a message into words, normalize them, and return
-    the resulting list. For splitting, you should split on spaces. For normalization,
-    you should convert everything to lowercase.
-
-    Args:
-        message: A string containing an SMS message
-
-    Returns:
-       The list of normalized words from the message.
+    """
+    This function splits a title into words, normalize them, and return
+    the resulting list. We are splitting on spaces. And we are keeping
+    ! and ?.
     """
 
-    # *** START CODE HERE ***
     if type_data in ['title', 'description']:
         new_message = []
         if "?" in message:
@@ -184,26 +165,15 @@ def get_words(message,type_data):
     if type_data == 'tags':
         message = message[2:-2]
         return [word.lower() for word in message.split("', '")]
-    # *** END CODE HERE ***
 
 
 def create_dictionary(messages,type_data):
-    """Create a dictionary mapping words to integer indices.
-
-    This function should create a dictionary of word to indices using the provided
-    training messages. Use get_words to process each message.
-
-    Rare words are often not useful for modeling. Please only add words to the dictionary
-    if they occur in at least five messages.
-
-    Args:
-        messages: A list of strings containing SMS messages
-
-    Returns:
-        A python dict mapping words to integers.
+    """
+    This function creates a dictionary of word to indices using the provided
+    training messages.
+    We are only adding words if they occur in at least 3 messages.
     """
 
-    # *** START CODE HERE ***
     CompleteWordList = []
     WordCounter = []
 
@@ -225,31 +195,15 @@ def create_dictionary(messages,type_data):
             dictionary[CompleteWordList[wordnumber]]=counter
             counter+=1
     return dictionary
-        
-    # *** END CODE HERE ***
-
 
 def transform_text(messages, word_dictionary,type_data):
-    """Transform a list of text messages into a numpy array for further processing.
-
-    This function should create a numpy array that contains the number of times each word
-    of the vocabulary appears in each message. 
-    Each row in the resulting array should correspond to each message 
-    and each column should correspond to a word of the vocabulary.
-
-    Use the provided word dictionary to map words to column indices. Ignore words that
-    are not present in the dictionary. Use get_words to get the words for a message.
-
-    Args:
-        messages: A list of strings where each string is an SMS message.
-        word_dictionary: A python dict mapping words to integers.
-
-    Returns:
-        A numpy array marking the words present in each message.
-        Where the component (i,j) is the number of occurrences of the
-        j-th vocabulary word in the i-th message.
     """
-    # *** START CODE HERE ***
+    This function creates a numpy array that contains the number of times each word
+    of the vocabulary appears in each message. 
+    Each row in the resulting array corresponds to each message
+    and each column corresponds to a word of the vocabulary.
+    """
+
     numberMessages = len(messages)
     numberWords = len(word_dictionary)
     result = np.zeros((numberMessages,numberWords))
@@ -261,9 +215,6 @@ def transform_text(messages, word_dictionary,type_data):
                 word_index = word_dictionary[word]
                 result[i,word_index]+=1
     return result
-    # *** END CODE HERE ***
-
-
 
 def get_top_five_naive_bayes_words(model, dictionary):
     """Compute the top five words that are most indicative of the spam (i.e positive) class.
@@ -277,7 +228,7 @@ def get_top_five_naive_bayes_words(model, dictionary):
 
     Returns: A list of the top five most indicative words in sorted order with the most indicative first
     """
-    # *** START CODE HERE ***
+
     avg_perf_word = model[1]
     indices = []
     for k in range(5):

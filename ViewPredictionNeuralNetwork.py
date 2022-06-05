@@ -273,7 +273,7 @@ def nn_test(data, labels, params):
 
 def compute_accuracy(output, labels):
     nExamples = len(labels)
-    accuracy = np.average(abs(output-labels)/output)
+    accuracy = np.average(2*abs(output-labels)/(output+labels))
     return accuracy
 
 
@@ -336,10 +336,10 @@ def main(plot=True):
     
     train_names = [datapoint[1] for datapoint in tuples]
     train_names = [datapoint[13] for datapoint in tuples]
-    
-    dictionary = NBa.create_dictionary(train_names)
+    data_type = 'title'
+    dictionary = NBa.create_dictionary(train_names,data_type)
     print('Size of dictionary: ', len(dictionary))
-    train_matrix = NBa.transform_text(train_names, dictionary)
+    train_matrix = NBa.transform_text(train_names, dictionary,data_type)
     train_number_views = np.array([[np.log(datapoint[-1])] for datapoint in tuples])
     """
     training_data = tuples[:n_examples]
