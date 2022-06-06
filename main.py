@@ -20,3 +20,11 @@ tokenizing = True
 dictionary = DataPre.create_dictionary(train_names,data_type, tokenizing)
 print('Size of dictionary: ', len(dictionary))
 train_matrix = DataPre.transform_text(train_names, dictionary,data_type, tokenizing)
+
+# ##3. BERT EMBEDDING
+# embedded_names = []
+# train_names = train_set['title']
+# for i in range(len(train_names)):
+#     text = train_names.values[i]
+#     embedded_names.append(BertEmb.get_embedding(text))
+

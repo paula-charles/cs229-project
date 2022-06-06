@@ -2,10 +2,6 @@ import torch
 from transformers import BertTokenizer
 from transformers import BertModel
 
-import csv
-import pandas as pd
-
-
 # Load pretrained model/tokenizer
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertModel.from_pretrained('bert-base-uncased',output_hidden_states = True)
@@ -34,30 +30,3 @@ def get_embedding(text):
     embedding1 = word_embed_1[0]
 
     return embedding1
-
-
-def main():
-
-    df = pd.read_csv('ted_main.csv', delimiter=',')
-    tuples = [list(x) for x in df.values]
-
-    n_examples_total = len(tuples)
-    n_examples = int(n_examples_total*0.7)
-    n_val = int(n_examples_total*0.9)
-
-    training_data = tuples[:n_examples]
-    validation_data = tuples[n_examples:n_val]
-    test_data = tuples[n_val:]
-
-    names = [list(datapoint[7].rpartition(": "))[-1] for datapoint in training_data]
-    number_comments = [datapoint[0] for datapoint in training_data]
-    number_views = [datapoint[-1] for datapoint in training_data]
-
-    embedded_names = []
-
-    for text in names:
-        embedded_names.append(get_embedding(text))
-
-
-if __name__ == "__main__":
-    main()
