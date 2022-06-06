@@ -276,10 +276,6 @@ def compute_accuracy(output, labels):
     accuracy = np.average(2*abs(output-labels)/(output+labels))
     return accuracy
 
-
-
-
-
 def run_train_test(name, all_data, all_labels, backward_prop_func, num_epochs, plot=True):
     params, cost_train, cost_dev, accuracy_train, accuracy_dev = nn_train(
         all_data['train'], all_labels['train'], 
@@ -337,7 +333,7 @@ def main(plot=True):
     train_names = [datapoint[1] for datapoint in tuples]
     train_names = [datapoint[13] for datapoint in tuples]
     data_type = 'title'
-    dictionary = NBa.create_dictionary(train_names,data_type)
+    dictionary = NBa.create_dictionary(train_names,data_type, tokenizing = True)
     print('Size of dictionary: ', len(dictionary))
     train_matrix = NBa.transform_text(train_names, dictionary,data_type)
     train_number_views = np.array([[np.log(datapoint[-1])] for datapoint in tuples])

@@ -7,11 +7,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import re
 
-from transformers import BertTokenizers
+from transformers import BertTokenizer
 ## Load pretrained model/tokenizer
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-
-
 
 class LinearModel(object):
     """Base class for linear models."""
@@ -178,7 +176,7 @@ def get_words(message,type_data, tokenizing = False):
 
 
 
-def create_dictionary(messages,type_data):
+def create_dictionary(messages,type_data, tokenizing = False):
     """
     This function creates a dictionary of word to indices using the provided
     training messages.
@@ -189,7 +187,7 @@ def create_dictionary(messages,type_data):
     WordCounter = []
 
     for message in messages:
-        word_list= set(get_words(message,type_data)) #get rid of duplicates
+        word_list= set(get_words(message,type_data, tokenizing)) #get rid of duplicates
         for word in word_list:
             if word in CompleteWordList:
                 incrementationIndex = CompleteWordList.index(word)
@@ -227,17 +225,11 @@ def transform_text(messages, word_dictionary,type_data):
                 result[i,word_index]+=1
     return result
 
-def get_top_five_naive_bayes_words(model, dictionary):
-    """Compute the top five words that are most indicative of the spam (i.e positive) class.
-
-    Ues the metric given in part-c as a measure of how indicative a word is.
-    Return the words in sorted form, with the most indicative word first.
-
-    Args:
-        model: The Naive Bayes model returned from fit_naive_bayes_model
-        dictionary: A mapping of word to integer ids
-
-    Returns: A list of the top five most indicative words in sorted order with the most indicative first
+def get_top_words(nb, model, dictionary):
+    """
+    This function computes the top words that appear in the most viewed titles.
+    The argument nb states how many words we are returning.
+    Return the words in sorted form, with the most popular word first.
     """
 
     avg_perf_word = model[1]
@@ -246,10 +238,8 @@ def get_top_five_naive_bayes_words(model, dictionary):
         ind = np.argmax(avg_perf_word)
         indices.append(ind)
         avg_perf_word[ind] = 0
-    
-    return [list(dictionary.keys())[indices[k]] for k in range(5)]
-    
-    # *** END CODE HERE ***
+
+    return [list(dictionary.keys())[indices[k]] for k in range(nb)]
 
 
 def main():
@@ -269,7 +259,7 @@ def main():
     number_comments = [datapoint[0] for datapoint in training_data]
     number_views = [datapoint[-1] for datapoint in training_data]
     
-    dictionary = create_dictionary(names, 'title')
+    dictionary = create_dictionary(names, 'title', tokenizing = True)
     #print(dictionary)
     print('Size of dictionary: ', len(dictionary))
     
@@ -295,10 +285,10 @@ def main():
         plt.hist(x, bins=logbins)
         plt.xscale('log')
 
-    plot_loghist(val_number_views, 20)
-    plt.title('Number of views of the titles in the training data set\n'
-              '(log-scale)')
-    plt.show()
+    #plot_loghist(val_number_views, 20)
+    #plt.title('Number of views of the titles in the training data set\n'
+    #          '(log-scale)')
+    #plt.show()
     
     
     naive_bayes_model_views = fit_naive_bayes_model(train_matrix,number_views)
