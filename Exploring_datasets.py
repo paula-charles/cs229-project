@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
-
 ##FOR THE TED TALK DATA SET##
 
 def data_import_ted(path):
